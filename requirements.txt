@@ -1,0 +1,12 @@
+# CS224n assignments — Python 3.11, CPU-only
+# Install into the shared csdiy venv or your own:
+#   pip install -r requirements.txt
+torch>=2.0
+numpy>=1.24
+matplotlib>=3.6
+tqdm>=4.64
+docopt==0.6.2          # A4 run.py / sanity_check.py CLI
+nltk>=3.8              # A4 tokenization for sanity checks (needs punkt, punkt_tab)
+sacrebleu>=2.3         # A4 BLEU evaluation
+sentencepiece>=0.1.99  # A4 subword vocabulary
+tensorboard>=2.11      # A5 training logs (SummaryWriter)
