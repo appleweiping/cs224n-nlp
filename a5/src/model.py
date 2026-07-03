@@ -88,20 +88,34 @@ class DownProjectBlock(nn.Module):
     """
     def __init__(self, config):
         super().__init__()
-        ### YOUR CODE HERE
-        ### Hint: Copy over the code from Block and make necessary modifications.
-        pass
-        ### END YOUR CODE
+        # Layernorms: one for the basis vectors C, one before the MLP.
+        self.ln1 = nn.LayerNorm(config.n_embd)
+        self.ln2 = nn.LayerNorm(config.n_embd)
+        # Cross-attention: queries come from C, keys/values from the input.
+        self.attn = attention.CausalCrossAttention(config)
+        self.mlp = nn.Sequential(
+            nn.Linear(config.n_embd, 4 * config.n_embd),
+            nn.GELU(),
+            nn.Linear(4 * config.n_embd, config.n_embd),
+            nn.Dropout(config.resid_pdrop),
+        )
+        # Learnable basis vectors C of shape (1, bottleneck_dim, n_embd);
+        # the leading 1 broadcasts across the batch dimension.
+        self.C = nn.Parameter(torch.empty(1, config.bottleneck_dim, config.n_embd))
+        nn.init.xavier_uniform_(self.C)
 
     def forward(self, x_input):
         """Hint: perform cross-attention between x_input and self.C.
         Use the layernorm layers on C, and then on the input to the MLP.
         """
-        ### YOUR CODE HERE
-        ### Hint: Copy over the code from Block and make necessary modifications.
-        ### Should be around 3-5 lines.
-        pass
-        ### END YOUR CODE
+        # Broadcast C to the batch size of the input.
+        B = x_input.size(0)
+        C = self.C.expand(B, -1, -1)
+        # Cross-attention: keys/values from x_input, queries from (normalized) C.
+        # This down-projects the (long) input sequence to bottleneck_dim tokens.
+        x = C + self.attn(x_input, self.ln1(C))
+        x = x + self.mlp(self.ln2(x))
+        return x
     
     
 class UpProjectBlock(nn.Module):
@@ -113,21 +127,28 @@ class UpProjectBlock(nn.Module):
     """
     def __init__(self, config):
         super().__init__()
-        ### YOUR CODE HERE
-        ### Hint: Copy over the code from Block and make necessary modifications.
-        pass
-        ### END YOUR CODE
-    
+        self.ln1 = nn.LayerNorm(config.n_embd)
+        self.ln2 = nn.LayerNorm(config.n_embd)
+        # Cross-attention: queries from the original input, keys/values from y.
+        self.attn = attention.CausalCrossAttention(config)
+        self.mlp = nn.Sequential(
+            nn.Linear(config.n_embd, 4 * config.n_embd),
+            nn.GELU(),
+            nn.Linear(4 * config.n_embd, config.n_embd),
+            nn.Dropout(config.resid_pdrop),
+        )
+
     def forward(self, y, x_input):
         """Hint: perform cross-attention between previous layer's output y and
-        x_input. 
+        x_input.
         Use the layernorm layers on y, and then on the input to the MLP.
         """
-        ### YOUR CODE HERE
-        ### Hint: Copy over the code from Block and make necessary modifications.
-        ### Should be around 3-5 lines.
-        pass
-        ### END YOUR CODE
+        # Up-project the bottleneck representation y back to the input length:
+        # keys/values come from (normalized) y, queries from x_input, so the
+        # output has the original input sequence length.
+        x = x_input + self.attn(self.ln1(y), x_input)
+        x = x + self.mlp(self.ln2(x))
+        return x
     
 
 class GPT(nn.Module):

@@ -8,10 +8,25 @@ import random
 import argparse
 random.seed(0)
 
+import os
+
 import dataset
 import model
 import trainer
 import utils
+
+# Optional override so the canonical (GPU-scale) epoch counts can be reduced for
+# a CPU-only run without changing the documented defaults. Set e.g.
+# CS224N_MAX_EPOCHS=10 to cap every training phase. Unset -> use the spec values.
+_MAX_EPOCHS_OVERRIDE = os.environ.get("CS224N_MAX_EPOCHS")
+def _epochs(default):
+    return int(_MAX_EPOCHS_OVERRIDE) if _MAX_EPOCHS_OVERRIDE else default
+
+# DataLoader workers. The spec uses 4, but Windows uses 'spawn' for
+# multiprocessing which re-imports this module and deadlocks without a
+# __main__ guard, so default to 0 there. Override with CS224N_NUM_WORKERS.
+_NUM_WORKERS = int(os.environ.get(
+    "CS224N_NUM_WORKERS", 0 if os.name == "nt" else 4))
 
 
 argp = argparse.ArgumentParser()
@@ -64,10 +79,13 @@ Don't change above here; write your code below
 # note: models should moved to device defined on line 34.
 
 if args.variant == 'vanilla':
-    pass # [part c] Make some model here
+    # [part c] Vanilla GPT: use the config exactly as defined above.
+    model = model.GPT(mconf).to(device)
 elif args.variant == 'perceiver':
-    # set mconf.perceiver, and mconf.bottleneck_dim parameters appropriately.
-    pass # [part g] Make some other model here
+    # [part g] Perceiver: enable the bottleneck down/up projection blocks.
+    mconf.perceiver = True
+    mconf.bottleneck_dim = args.bottleneck_dim
+    model = model.GPT(mconf).to(device)
 else:
     raise ValueError("Unknown model variant")
 
@@ -91,8 +109,21 @@ if args.function == 'pretrain':
     # warmup_tokens=512*20
     # final_tokens=200*len(pretrain_dataset)*block_size
     # num_workers=4
-    # writer=writer 
-    raise NotImplementedError
+    # writer=writer
+    tconf = trainer.TrainerConfig(
+        max_epochs=_epochs(650),
+        batch_size=128,
+        learning_rate=args.pretrain_lr,
+        lr_decay=True,
+        warmup_tokens=512 * 20,
+        final_tokens=200 * len(pretrain_dataset) * block_size,
+        num_workers=_NUM_WORKERS,
+        writer=writer,
+        ckpt_path=args.writing_params_path,
+    )
+    trainer_obj = trainer.Trainer(model, pretrain_dataset, None, tconf)
+    trainer_obj.train()
+    torch.save(model.state_dict(), args.writing_params_path)
 elif args.function == 'finetune':
     assert args.writing_params_path is not None
     assert args.finetune_corpus_path is not None
@@ -128,8 +159,32 @@ elif args.function == 'finetune':
     #         writer=writer
     #     You can use the args.reading_params_path flag to switch between the
     #     number of epochs for each case.
-     
-    raise NotImplementedError
+
+    # If a pretrained checkpoint is provided, load it and finetune briefly;
+    # otherwise train from scratch for more epochs.
+    if args.reading_params_path is not None:
+        model.load_state_dict(torch.load(args.reading_params_path))
+        finetune_max_epochs = _epochs(10)
+    else:
+        finetune_max_epochs = _epochs(75)
+
+    finetune_corpus = open(args.finetune_corpus_path, encoding='utf-8').read()
+    finetune_dataset = dataset.NameDataset(pretrain_dataset, finetune_corpus)
+
+    tconf = trainer.TrainerConfig(
+        max_epochs=finetune_max_epochs,
+        batch_size=256,
+        learning_rate=args.finetune_lr,
+        lr_decay=True,
+        warmup_tokens=512 * 20,
+        final_tokens=200 * len(pretrain_dataset) * block_size,
+        num_workers=_NUM_WORKERS,
+        writer=writer,
+        ckpt_path=args.writing_params_path,
+    )
+    trainer_obj = trainer.Trainer(model, finetune_dataset, None, tconf)
+    trainer_obj.train()
+    torch.save(model.state_dict(), args.writing_params_path)
 elif args.function == 'evaluate':
     assert args.outputs_path is not None
     assert args.reading_params_path is not None

@@ -168,7 +168,39 @@ class CharCorruptionDataset(Dataset):
 
     def __getitem__(self, idx):
         # TODO [part e]: see spec above
-        raise NotImplementedError
+        document = self.data[idx]
+
+        # 1. Randomly truncate the document to a length in
+        #    [4, int(block_size * 7/8)].
+        max_trunc_len = int(self.block_size * 7 / 8)
+        trunc_len = random.randint(4, max_trunc_len)
+        document = document[:trunc_len]
+        trunc_len = len(document)  # document may be shorter than trunc_len
+
+        # 2. Split into [prefix][masked_content][suffix]. masked_content is
+        #    1/4 the truncated length on average; draw its length uniformly in
+        #    [1, floor(len/2)] so the mean is roughly len/4.
+        mask_len = random.randint(1, max(1, trunc_len // 2))
+        # Prefix length is chosen so both prefix and suffix are non-empty.
+        prefix_len = random.randint(1, max(1, trunc_len - mask_len - 1))
+        prefix = document[:prefix_len]
+        masked_content = document[prefix_len:prefix_len + mask_len]
+        suffix = document[prefix_len + mask_len:]
+
+        # 3. Rearrange into the masked string with sentinels and padding.
+        masked_string = (prefix + self.MASK_CHAR + suffix + self.MASK_CHAR
+                         + masked_content)
+        masked_string = masked_string + self.PAD_CHAR * (
+            self.block_size - len(masked_string))
+
+        # 4. Input predicts the next character of the masked string.
+        input_string = masked_string[:-1]
+        output_string = masked_string[1:]
+
+        # 5. Encode as Long tensors.
+        x = torch.tensor([self.stoi[c] for c in input_string], dtype=torch.long)
+        y = torch.tensor([self.stoi[c] for c in output_string], dtype=torch.long)
+        return x, y
 
 """
 Code under here is strictly for your debugging purposes; feel free to modify
