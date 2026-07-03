@@ -1,0 +1,61 @@
+================================================================================
+INITIALIZING
+================================================================================
+Loading data...
+took 6.80 seconds
+Building parser...
+took 3.04 seconds
+Loading pretrained embeddings...
+took 3.94 seconds
+took 5.21 seconds
+took 81.41 seconds
+took 0.02 seconds
+================================================================================
+TRAINING
+================================================================================
+Epoch 1 out of 10
+Average Train Loss: 0.19142450094303656
+- dev UAS: 83.75
+New best dev UAS! Saving model.
+Epoch 2 out of 10
+Average Train Loss: 0.11586640742950109
+- dev UAS: 86.26
+New best dev UAS! Saving model.
+Epoch 3 out of 10
+Average Train Loss: 0.10131605067270207
+- dev UAS: 86.91
+New best dev UAS! Saving model.
+Epoch 4 out of 10
+Average Train Loss: 0.09221211462825923
+- dev UAS: 87.63
+New best dev UAS! Saving model.
+Epoch 5 out of 10
+Average Train Loss: 0.08600249418835619
+- dev UAS: 87.99
+New best dev UAS! Saving model.
+Epoch 6 out of 10
+Average Train Loss: 0.0809239808719976
+- dev UAS: 88.05
+New best dev UAS! Saving model.
+Epoch 7 out of 10
+Average Train Loss: 0.07634334737088257
+- dev UAS: 88.53
+New best dev UAS! Saving model.
+Epoch 8 out of 10
+Average Train Loss: 0.07298847309261303
+- dev UAS: 88.59
+New best dev UAS! Saving model.
+Epoch 9 out of 10
+Average Train Loss: 0.06985021723450456
+- dev UAS: 88.27
+Epoch 10 out of 10
+Average Train Loss: 0.0666851647242549
+- dev UAS: 88.68
+New best dev UAS! Saving model.
+================================================================================
+TESTING
+================================================================================
+Restoring the best model weights found on the dev set
+Final evaluation on test set
+- test UAS: 88.92
+Done!

@@ -1,0 +1,29 @@
+[nltk_data] Downloading package punkt to
+[nltk_data]     C:\Users\admin\AppData\Roaming\nltk_data...
+[nltk_data]   Package punkt is already up-to-date!
+uniformly initialize parameters [-0.100000, +0.100000]
+use device: cpu
+begin Maximum Likelihood training
+D:\Project\_csdiy\.venv-ml\Lib\site-packages\torch\nn\modules\conv.py:380: UserWarning: Using padding='same' with even kernel lengths and odd dilation may require a zero-padded copy of the input be created (Triggered internally at C:\actions-runner\_work\pytorch\pytorch\aten\src\ATen\native\Convolution.cpp:1091.)
+  return F.conv1d(
+epoch 1, iter 10, avg. loss 211.11, avg. ppl 3018.74 cum. examples 320, speed 16.10 words/sec, time elapsed 523.81 sec
+epoch 1, iter 20, avg. loss 185.73, avg. ppl 1177.36 cum. examples 640, speed 37.63 words/sec, time elapsed 747.20 sec
+epoch 1, iter 30, avg. loss 178.14, avg. ppl 927.48 cum. examples 960, speed 38.99 words/sec, time elapsed 961.20 sec
+epoch 1, iter 40, avg. loss 171.27, avg. ppl 770.12 cum. examples 1280, speed 40.66 words/sec, time elapsed 1163.98 sec
+epoch 1, iter 50, avg. loss 172.64, avg. ppl 705.87 cum. examples 1600, speed 44.79 words/sec, time elapsed 1352.04 sec
+epoch 1, iter 60, avg. loss 170.79, avg. ppl 655.62 cum. examples 1920, speed 43.89 words/sec, time elapsed 1544.03 sec
+epoch 1, iter 70, avg. loss 166.62, avg. ppl 595.42 cum. examples 2240, speed 35.75 words/sec, time elapsed 1777.44 sec
+epoch 1, iter 80, avg. loss 164.37, avg. ppl 582.26 cum. examples 2560, speed 39.16 words/sec, time elapsed 1988.41 sec
+epoch 1, iter 90, avg. loss 168.15, avg. ppl 553.10 cum. examples 2880, speed 39.96 words/sec, time elapsed 2201.61 sec
+epoch 1, iter 100, avg. loss 161.39, avg. ppl 530.78 cum. examples 3200, speed 62.56 words/sec, time elapsed 2333.17 sec
+epoch 1, iter 110, avg. loss 158.84, avg. ppl 513.80 cum. examples 3520, speed 57.64 words/sec, time elapsed 2474.45 sec
+epoch 1, iter 120, avg. loss 162.52, avg. ppl 484.21 cum. examples 3840, speed 41.62 words/sec, time elapsed 2676.57 sec
+epoch 1, iter 130, avg. loss 159.60, avg. ppl 438.23 cum. examples 4160, speed 48.14 words/sec, time elapsed 2850.99 sec
+epoch 1, iter 140, avg. loss 157.58, avg. ppl 425.37 cum. examples 4480, speed 48.24 words/sec, time elapsed 3023.67 sec
+epoch 1, iter 150, avg. loss 159.98, avg. ppl 442.15 cum. examples 4800, speed 54.81 words/sec, time elapsed 3177.01 sec
+epoch 1, iter 160, avg. loss 154.40, avg. ppl 408.30 cum. examples 5120, speed 59.43 words/sec, time elapsed 3315.29 sec
+epoch 1, iter 170, avg. loss 151.03, avg. ppl 377.48 cum. examples 5440, speed 55.40 words/sec, time elapsed 3462.31 sec
+epoch 1, iter 180, avg. loss 155.32, avg. ppl 372.90 cum. examples 5760, speed 53.75 words/sec, time elapsed 3618.48 sec
+epoch 1, iter 190, avg. loss 154.77, avg. ppl 365.68 cum. examples 6080, speed 57.96 words/sec, time elapsed 3763.28 sec
+epoch 1, iter 200, avg. loss 149.65, avg. ppl 370.79 cum. examples 6400, speed 58.23 words/sec, time elapsed 3902.31 sec
+epoch 1, iter 210, avg. loss 155.40, avg. ppl 366.13 cum. examples 6720, speed 54.79 words/sec, time elapsed 4056.07 sec
