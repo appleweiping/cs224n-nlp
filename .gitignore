@@ -1,0 +1,49 @@
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*.egg-info/
+.ipynb_checkpoints/
+.pytest_cache/
+
+# ---- Virtual envs ----
+.venv*/
+venv/
+env/
+
+# ---- Datasets (downloaded at runtime; see README) ----
+# A2 Stanford Sentiment Treebank
+a2/utils/datasets/
+a2/saved_params_*.npy
+a2/saved_state_*.pickle
+# A3 dependency-parsing data + pretrained word embeddings (large)
+a3/data/
+# A4 machine-translation corpora + sentencepiece models
+a4/zh_en_data/
+a4/*.model
+a4/*.vocab
+a4/vocab.json
+a4/outputs/
+# A5 pretraining corpus is kept (small); trained params are not
+a5/expt/
+# TensorBoard event logs
+runs/
+**/runs/
+expt/
+
+# ---- Large model checkpoints / trained params ----
+*.bin
+*.pt
+*.pth
+*.params
+*.weights
+a3/results/
+model.weights
+
+# ---- Starter zips (kept out of repo; downloaded from Stanford) ----
+_starter/
+
+# ---- OS / editor ----
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
