@@ -73,8 +73,23 @@ class ParserModel(nn.Module):
         ### 
         ### See the PDF for hints.
 
+        # Embedding -> hidden layer weights and bias.
+        # Input to this layer is the concatenation of n_features embeddings.
+        self.embed_to_hidden_weight = nn.Parameter(
+            torch.empty(self.n_features * self.embed_size, self.hidden_size))
+        nn.init.xavier_uniform_(self.embed_to_hidden_weight)
+        self.embed_to_hidden_bias = nn.Parameter(torch.empty(self.hidden_size))
+        nn.init.uniform_(self.embed_to_hidden_bias)
 
+        # Dropout applied after the ReLU non-linearity.
+        self.dropout = nn.Dropout(self.dropout_prob)
 
+        # Hidden -> logits layer weights and bias.
+        self.hidden_to_logits_weight = nn.Parameter(
+            torch.empty(self.hidden_size, self.n_classes))
+        nn.init.xavier_uniform_(self.hidden_to_logits_weight)
+        self.hidden_to_logits_bias = nn.Parameter(torch.empty(self.n_classes))
+        nn.init.uniform_(self.hidden_to_logits_bias)
 
         ### END YOUR CODE
 
@@ -107,7 +122,12 @@ class ParserModel(nn.Module):
         ###     View: https://pytorch.org/docs/stable/tensors.html#torch.Tensor.view
         ###     Flatten: https://pytorch.org/docs/stable/generated/torch.flatten.html
 
-
+        # w has shape (batch_size, n_features). Selecting rows of self.embeddings
+        # via index_select on a flattened index vector gives
+        # (batch_size * n_features, embed_size), which we reshape back to
+        # (batch_size, n_features * embed_size).
+        x = self.embeddings[w]                     # (batch, n_features, embed_size)
+        x = x.view(w.shape[0], -1)                 # (batch, n_features * embed_size)
 
         ### END YOUR CODE
         return x
@@ -144,6 +164,12 @@ class ParserModel(nn.Module):
         ###     Matrix product: https://pytorch.org/docs/stable/torch.html#torch.matmul
         ###     ReLU: https://pytorch.org/docs/stable/nn.html?highlight=relu#torch.nn.functional.relu
 
+        # Look up embeddings, apply the two-layer network:
+        #   h = ReLU(x W_1 + b_1); h = dropout(h); logits = h W_2 + b_2
+        x = self.embedding_lookup(w)                       # (batch, n_feat*embed)
+        h = F.relu(x.matmul(self.embed_to_hidden_weight) + self.embed_to_hidden_bias)
+        h = self.dropout(h)
+        logits = h.matmul(self.hidden_to_logits_weight) + self.hidden_to_logits_bias
 
         ### END YOUR CODE
         return logits

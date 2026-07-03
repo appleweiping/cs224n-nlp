@@ -20,20 +20,13 @@ class PartialParse(object):
         self.sentence = sentence
 
         ### YOUR CODE HERE (3 Lines)
-        ### Your code should initialize the following fields:
-        ###     self.stack: The current stack represented as a list with the top of the stack as the
-        ###                 last element of the list.
-        ###     self.buffer: The current buffer represented as a list with the first item on the
-        ###                  buffer as the first item of the list
-        ###     self.dependencies: The list of dependencies produced so far. Represented as a list of
-        ###             tuples where each tuple is of the form (head, dependent).
-        ###             Order for this list doesn't matter.
-        ###
-        ### Note: The root token should be represented with the string "ROOT"
-        ### Note: If you need to use the sentence object to initialize anything, make sure to not directly 
-        ###       reference the sentence object.  That is, remember to NOT modify the sentence object. 
-
-
+        # Stack starts with just the ROOT token.
+        self.stack = ["ROOT"]
+        # Buffer starts with every word of the sentence, in order. Copy the
+        # list so we never mutate the caller's sentence object.
+        self.buffer = list(sentence)
+        # No dependencies produced yet.
+        self.dependencies = []
         ### END YOUR CODE
 
 
@@ -45,14 +38,21 @@ class PartialParse(object):
                                 transition is a legal transition.
         """
         ### YOUR CODE HERE (~7-12 Lines)
-        ### TODO:
-        ###     Implement a single parsing step, i.e. the logic for the following as
-        ###     described in the pdf handout:
-        ###         1. Shift
-        ###         2. Left Arc
-        ###         3. Right Arc
-
-
+        if transition == "S":
+            # SHIFT: move the first word of the buffer onto the stack.
+            self.stack.append(self.buffer.pop(0))
+        elif transition == "LA":
+            # LEFT-ARC: the top of the stack is the head of the second-to-top,
+            # which becomes a dependent and is removed from the stack.
+            dependent = self.stack.pop(-2)
+            head = self.stack[-1]
+            self.dependencies.append((head, dependent))
+        elif transition == "RA":
+            # RIGHT-ARC: the second-to-top of the stack is the head of the top,
+            # which becomes a dependent and is removed from the stack.
+            dependent = self.stack.pop(-1)
+            head = self.stack[-1]
+            self.dependencies.append((head, dependent))
         ### END YOUR CODE
 
     def parse(self, transitions):
@@ -90,20 +90,28 @@ def minibatch_parse(sentences, model, batch_size):
     dependencies = []
 
     ### YOUR CODE HERE (~8-10 Lines)
-    ### TODO:
-    ###     Implement the minibatch parse algorithm.  Note that the pseudocode for this algorithm is given in the pdf handout.
-    ###
-    ###     Note: A shallow copy (as denoted in the PDF) can be made with the "=" sign in python, e.g.
-    ###                 unfinished_parses = partial_parses[:].
-    ###             Here `unfinished_parses` is a shallow copy of `partial_parses`.
-    ###             In Python, a shallow copied list like `unfinished_parses` does not contain new instances
-    ###             of the object stored in `partial_parses`. Rather both lists refer to the same objects.
-    ###             In our case, `partial_parses` contains a list of partial parses. `unfinished_parses`
-    ###             contains references to the same objects. Thus, you should NOT use the `del` operator
-    ###             to remove objects from the `unfinished_parses` list. This will free the underlying memory that
-    ###             is being accessed by `partial_parses` and may cause your code to crash.
+    # Initialize a PartialParse for every sentence, preserving order.
+    partial_parses = [PartialParse(sentence) for sentence in sentences]
+    # Shallow copy: unfinished_parses references the same PartialParse objects.
+    unfinished_parses = partial_parses[:]
 
+    while unfinished_parses:
+        # Take the first batch_size parses still needing work.
+        minibatch = unfinished_parses[:batch_size]
+        # Predict the next transition for each and apply it.
+        transitions = model.predict(minibatch)
+        for parse, transition in zip(minibatch, transitions):
+            parse.parse_step(transition)
+        # A parse is finished once its buffer is empty and the stack holds
+        # only ROOT (size 1). Drop finished parses without using `del`.
+        unfinished_parses = [
+            parse for parse in unfinished_parses
+            if not (len(parse.buffer) == 0 and len(parse.stack) == 1)
+        ]
 
+    # dependencies[i] corresponds to sentences[i] because partial_parses
+    # preserves the input ordering.
+    dependencies = [parse.dependencies for parse in partial_parses]
     ### END YOUR CODE
 
     return dependencies
@@ -171,7 +179,7 @@ class DummyModel(object):
         """First shifts everything onto the stack and then does exclusively right arcs if the first word of
         the sentence is "right", "left" if otherwise.
         """
-        return [("RA" if pp.stack[1] is "right" else "LA") if len(pp.buffer) == 0 else "S"
+        return [("RA" if pp.stack[1] == "right" else "LA") if len(pp.buffer) == 0 else "S"
                 for pp in partial_parses]
 
     def interleave_predict(self, partial_parses):
