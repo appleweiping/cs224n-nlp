@@ -31,7 +31,7 @@ assignment that make this course a classic.
 |---|---|---|
 | **A1** Word vectors | Co-occurrence matrix + Truncated SVD, GloVe exploration | Symmetric 2830×2830 co-occurrence matrix over the Reuters *gold* corpus, reduced to 2D; figure below |
 | **A2** word2vec (NumPy) | Naive-softmax & negative-sampling skip-gram, from-scratch gradients + SGD | All gradient checks **pass**; SST training loss falls from ≈21.7 → ≈9–10 over 40k iters; word-vector plot |
-| **A3** Dependency parsing | Transition-based parser + feed-forward net (PyTorch) | Transition & model sanity checks pass; **test UAS 88.92%** (dev peak 88.59%), 10 epochs |
+| **A3** Dependency parsing | Transition-based parser + feed-forward net (PyTorch) | Transition & model sanity checks pass; **test UAS 88.92%** (dev peak 88.68%), 10 epochs |
 | **A4** NMT with attention | Bidirectional-LSTM encoder, LSTM decoder, Luong attention, subwords | Sanity checks 1d/1e/1f **pass**; training perplexity falls (927 → ~700+ and dropping); corpus BLEU reported from a reduced run |
 | **A5** Transformers | minGPT self-attention, span-corruption pretraining, Perceiver bottleneck | London baseline **5.0%** (25/500); span-corruption pretrain loss 5.61 → ~3.1; finetuned dev accuracy from a reduced run |
 
